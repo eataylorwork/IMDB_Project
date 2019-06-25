@@ -1,11 +1,11 @@
 #%% [markdown]
 #**IMDB dataset project**
 #
-# TODO: Fix genres done I think.
+# TODO: Get ready for GitHub by making the file download the data or check if the data is in the folder.
 #
-# TODO: Work on outliers.
+# TODO: Consider creating a version that doesn't use the notebook style.
 #
-# TODO: Check out 
+# TODO: Continue project.
 #
 #%% Change working directory from the workspace root to the ipynb file location.
 import os
