@@ -7,11 +7,9 @@
 #
 # TODO: Continue project.
 #
-# TODO: test2
 #%% Change working directory from the workspace root to the ipynb file location.
 import os
 try:
-	os.chdir(os.path.join(os.getcwd(), 'C:/Users/Elliot/Desktop/PythonProjects/Portfolio/IMDB'))
 	print(os.getcwd())
 except:
 	pass
@@ -21,9 +19,6 @@ except:
 get_ipython().run_line_magic('matplotlib', 'inline')
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-mpl.rc('axes', labelsize=14)
-mpl.rc('xtick', labelsize=12)
-mpl.rc('ytick', labelsize=12)
 import numpy as np
 import pandas as pd
 import time
@@ -33,12 +28,42 @@ from scipy import stats
 from functools import reduce
 from sklearn.impute import SimpleImputer
 from sklearn.model_selection import train_test_split
+import requests
+import urllib.request
+
+
+
+#%%
+try:
+    # Create target Directory
+    os.mkdir('Data')
+    print("Directory " , 'Data' ,  " Created ") 
+except FileExistsError:
+    print("Directory " , 'Data' ,  " already exists")
+
+
+#%%
+def downloadFile(url, local_filename, local_folder):
+    print('Downloading: ' local_filename)
+    response = requests.get(url)
+    with open(os.path.join(local_folder, local_filename), 'wb') as f:
+        f.write(response.content)
+    print('Downloaded: ' local_filename)
+
+try:
+    downloadFile('https://datasets.imdbws.com/title.ratings.tsv.gz', 'ratings.tsv.gz', 'Data')
+    downloadFile('https://datasets.imdbws.com/title.akas.tsv.gz', 'title.akas.tsv.gz', 'Data')
+    downloadFile('https://datasets.imdbws.com/title.basics.tsv.gz', 'title.basics.tsv.gz', 'Data')
+except FileExistsError:
+    print('Files found in directory.')
+    
 
 #%%
 try:
     df_imdb = pd.read_csv('df_imdb.csv.gz', sep='|')
     print('File found loaded to dataframe.')
-except:
+
+except FileExistsError:
     print('File not found loading files to create dataframe.')
     df0 = pd.read_csv('Data/akas.tsv', sep='\t')
     df1 = pd.read_csv('Data/basics.tsv', sep='\t')
