@@ -1,7 +1,7 @@
 #%% [markdown]
 #**IMDB dataset project**
 #
-# TODO: Get ready for GitHub by making the file download the data or check if the data is in the folder.
+# TODO: Stop downloads from happening each time.
 #
 # TODO: Consider creating a version that doesn't use the notebook style.
 #
@@ -30,6 +30,8 @@ from sklearn.impute import SimpleImputer
 from sklearn.model_selection import train_test_split
 import requests
 import urllib.request
+import gzip
+import shutil
 
 
 
@@ -44,26 +46,39 @@ except FileExistsError:
 
 #%%
 def downloadFile(url, local_filename, local_folder):
-    print('Downloading: ' local_filename)
+    print('Downloading: ' + local_filename)
     response = requests.get(url)
     with open(os.path.join(local_folder, local_filename), 'wb') as f:
         f.write(response.content)
-    print('Downloaded: ' local_filename)
+    print('Downloaded: ' + local_filename)
 
 try:
     downloadFile('https://datasets.imdbws.com/title.ratings.tsv.gz', 'ratings.tsv.gz', 'Data')
-    downloadFile('https://datasets.imdbws.com/title.akas.tsv.gz', 'title.akas.tsv.gz', 'Data')
-    downloadFile('https://datasets.imdbws.com/title.basics.tsv.gz', 'title.basics.tsv.gz', 'Data')
+    downloadFile('https://datasets.imdbws.com/title.akas.tsv.gz', 'akas.tsv.gz', 'Data')
+    downloadFile('https://datasets.imdbws.com/title.basics.tsv.gz', 'basics.tsv.gz', 'Data')
 except FileExistsError:
     print('Files found in directory.')
     
+
+
+#%%
+def gunzip_shutil(source_filepath, dest_filepath, block_size=65536):
+    with gzip.open(source_filepath, 'rb') as s_file, \
+            open(dest_filepath, 'wb') as d_file:
+        shutil.copyfileobj(s_file, d_file, block_size)
+
+gunzip_shutil('Data/ratings.tsv.gz', 'Data/ratings.tsv')
+gunzip_shutil('Data/akas.tsv.gz', 'Data/akas.tsv')
+gunzip_shutil('Data/basics.tsv.gz', 'Data/basics.tsv')
+
+
 
 #%%
 try:
     df_imdb = pd.read_csv('df_imdb.csv.gz', sep='|')
     print('File found loaded to dataframe.')
 
-except FileExistsError:
+except:
     print('File not found loading files to create dataframe.')
     df0 = pd.read_csv('Data/akas.tsv', sep='\t')
     df1 = pd.read_csv('Data/basics.tsv', sep='\t')
@@ -82,6 +97,11 @@ except FileExistsError:
             , chunksize=100000
             , compression='gzip'
             , encoding='utf-8')
+
+
+#%%
+
+df_imdb.info()
 
 #%% [markdown]
 # This gave me problems as originally the isOriginalTitle was of dtype object because of a missing value whereas it should be and int value.
