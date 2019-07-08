@@ -1,11 +1,11 @@
 #%% [markdown]
 #**IMDB dataset project**
 #
-# TODO: Stop downloads from happening each time.
-#
-# TODO: Consider creating a version that doesn't use the notebook style.
+# TODO: Fix repetition of gunzip 
 #
 # TODO: Continue project.
+#
+# TODO: Consider creating a version that doesn't use the notebook style.
 #
 #%% Change working directory from the workspace root to the ipynb file location.
 import os
@@ -32,6 +32,7 @@ import requests
 import urllib.request
 import gzip
 import shutil
+from tqdm import tqdm
 
 
 
@@ -43,22 +44,27 @@ try:
 except FileExistsError:
     print("Directory " , 'Data' ,  " already exists")
 
+#%%
+class DownloadProgressBar(tqdm):
+    def update_to(self, b=1, bsize=1, tsize=None):
+        if tsize is not None:
+            self.total = tsize
+        self.update(b * bsize - self.n)
+
+def download_url(url, output_path):
+    with DownloadProgressBar(unit='B', unit_scale=True,
+                             miniters=1, desc=url.split('/')[-1]) as t:
+        urllib.request.urlretrieve(url, filename=output_path, reporthook=t.update_to)
+
 
 #%%
-def downloadFile(url, local_filename, local_folder):
-    print('Downloading: ' + local_filename)
-    response = requests.get(url)
-    with open(os.path.join(local_folder, local_filename), 'wb') as f:
-        f.write(response.content)
-    print('Downloaded: ' + local_filename)
+files = ['ratings.tsv.gz', 'akas.tsv.gz', 'basics.tsv.gz']
 
-try:
-    downloadFile('https://datasets.imdbws.com/title.ratings.tsv.gz', 'ratings.tsv.gz', 'Data')
-    downloadFile('https://datasets.imdbws.com/title.akas.tsv.gz', 'akas.tsv.gz', 'Data')
-    downloadFile('https://datasets.imdbws.com/title.basics.tsv.gz', 'basics.tsv.gz', 'Data')
-except FileExistsError:
-    print('Files found in directory.')
-    
+for item in files:
+    if os.path.isfile('Data/'+item):
+        print(item + " already exists")
+    else:
+        download_url('https://datasets.imdbws.com/title.'+item, 'Data/'+item)
 
 
 #%%
